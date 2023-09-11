@@ -8,7 +8,7 @@ async function findProductByCode(code: number) {
 }
 
 async function findByPackId(pack_id: number) {
-   
+
     return await prisma.packs.findMany({
         where: { pack_id }
     });
@@ -20,11 +20,18 @@ async function findPackByProductId(product_id: number) {
     });
 }
 
- 
+async function updateProduct(code: number, sales_price: number) {
+    return await prisma.products.update({
+        where: { code },
+        data: { sales_price }
+    });
+}
+
 
 const repository = {
     findProductByCode,
     findByPackId,
-    findPackByProductId
+    findPackByProductId,
+    updateProduct
 }
 export default repository;

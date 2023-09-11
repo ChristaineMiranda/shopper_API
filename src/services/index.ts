@@ -1,5 +1,5 @@
 import repository from "../repositories";
-
+import UpdateItem from "../utils";
 
 function checkNewPriceRules(currentPrice: number, costPrice: number, newPrice: number) {
     const maxPrice: number = currentPrice * 1.1;
@@ -11,7 +11,7 @@ function checkNewPriceRules(currentPrice: number, costPrice: number, newPrice: n
 
 async function checkPackProdut(code: number, newPrice: number, list: number[][]) {
     const isPack = await repository.findByPackId(code);
-    if (!isPack.length) return "Preço consistente";
+    if (!isPack.length) return "OK";
 
     const foundComponents = [];
 
@@ -44,7 +44,7 @@ async function checkPackProdut(code: number, newPrice: number, list: number[][])
     }
 
     if (calculatedPackPrice === newPrice) {
-        return "Preço consistente";
+        return "OK";
     } else {
         return "Preço inconsistente";
     }
@@ -105,8 +105,8 @@ async function validateChanges(updateList: number[][]) {
         if (consistentPrice !== 'Preço inconsistente' && consistentReadjustment === 'OK' && isProductComponent === "OK") {
             return { ...response, allowed: true }
         }
-        let observation = (consistentPrice || "");
-        observation += " / " + consistentReadjustment;
+        let observation = (consistentPrice !== "OK" ? consistentPrice + " / " : "");
+        observation += consistentReadjustment;
         return { ...response, observation: observation, allowed: false }
     }));
 
@@ -115,10 +115,22 @@ async function validateChanges(updateList: number[][]) {
 
 }
 
+async function updateProducts(updateList: UpdateItem[]) {
+    updateList.forEach(async (item) => {
+        try {
+            await repository.updateProduct(item.code, item.newPrice);
+
+        } catch (error) {
+            throw new Error();
+        }
+    });
+
+}
 
 
 const service = {
     validateChanges,
+    updateProducts
 
 };
 export default service;
